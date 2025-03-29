@@ -8,9 +8,10 @@
 </head>
 <body>
     <h1>Your Cart</h1>
+    <p id="message"style="color:green"></p>
     <ul>
     {%for item in cart%}
-    <li id="item--{{item}}">
+    <li id="item-{{item|urlencode}}">
         {{item}}
         <button onclick="removeItem('{{item}}')">Remove</button>
     </li>
