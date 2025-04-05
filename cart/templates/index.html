@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Add An Item to cart</h1>
+    {% if message %}
+        <p style="color: red;">{{ message }}</p>
+    {% endif %}
+
+
+
+    <form action="{{url_for('cart.index')}}" method="POST">
+     <label for="item">Enter The Name of Item </label>
+     <input type="text" id="item" name="item" required>
+     <button type="submit"> Add Item to cart</button>
+    </form>
+    <br>
+    <a href="{{url_for ('cart.show_cart')}}">Show List Of Items In Cart</a>
+
+
+    <h2>SEARCH</h2>
+    <form action="{{url_for('cart.index')}}" method="GET">
+    <input type="text" name="search" value="{{search_query}}">
+    <button type="submit"> SEARCH</button>
+    </form>
+    {%if search_query%}
+
+    <h3>Search result "{{search_query}}":</h3>
+
+    {% if search_results %}
+    <ul>
+        {% for item in search_results %}
+            <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No matching items found.</p>
+    {% endif %}
+{% endif %}
+
+<br>
+
+</body>
+</html>

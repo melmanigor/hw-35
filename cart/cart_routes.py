@@ -1,12 +1,11 @@
-from flask import Flask,render_template,request,redirect,url_for,abort
-from cart import cart_bp,cart
-import webbrowser
-from threading import Timer
+from flask import Blueprint, Flask,render_template,request,redirect,url_for,abort
 
-app=Flask(__name__)
-app.register_blueprint(cart_bp,url_prefix='/cart')
 
-@app.route('/', methods=['GET','POST'])
+cart_bp=Blueprint('cart',__name__,template_folder='templates')
+cart=[]
+
+
+@cart_bp.route('/', methods=['GET','POST'])
 def index():
     search_query=request.args.get('search','').strip()
     search_results=[]
@@ -29,12 +28,22 @@ def index():
 
     return render_template('index.html',search_query=search_query,search_results=search_results)
 
-def open_browser():
-    webbrowser.open_new("http://127.0.0.1:5000")
+@cart_bp.route('/view_cart')
+def show_cart():
+    return render_template("cart.html",cart=cart)
 
-if __name__=='__main__':
-    Timer(1, open_browser).start()
-    app.run(debug=True,use_reloader=False)
+@cart_bp.route('/remove_item/<path:item>',methods=["DELETE"])
+def remove_item(item):
+    if item in cart:
+        cart.remove(item)
+        return "removed",200
+    return "not found",404
 
+@cart_bp.app_errorhandler(404)
+def item_not_found(error):
+    return render_template("404.html",error=error),404
 
+@cart_bp.app_errorhandler(400)
+def item_not_found(error):
+    return render_template("400.html",error=error),404
 
