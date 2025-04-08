@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+<body>
+    
+    <h2>Upload image</h2>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul class="flashes" style="color: green;">
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form enctype="multipart/form-data" method="POST" action="">
+        <label for="product_id">Product id</label>
+        <input type="text" id="product_id" name="product_id" required>
+        <br>
+        <label for="image">Upload image</label>
+        <input type="file" id="image" name="image" accept="image/*" required>
+        <br>
+        <button type="submit">UPLOAD IMAGE </button>
+        
+       </form>
+ 
+</body>
+</html>
