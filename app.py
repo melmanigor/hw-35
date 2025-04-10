@@ -1,7 +1,8 @@
-from flask import Flask,render_template,request,redirect,url_for,abort,flash
+from flask import Flask,render_template,request,redirect,url_for,abort,flash,send_from_directory
 from cart import cart_bp,cart,api_cart_bp
 import webbrowser
 import os
+import uuid
 from werkzeug.utils import secure_filename
 from threading import Timer
 
@@ -9,9 +10,11 @@ app=Flask(__name__)
 app.register_blueprint(cart_bp,url_prefix='/cart')
 app.register_blueprint(api_cart_bp,url_prefix='/api')
 app.secret_key="supersecret123"
-UPLOAD_FOLDER='static/images'
-ALLOWED_EXTENSION={'png','jpg'}
+UPLOAD_FOLDER= 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg'}
 
+upload_images={}
 @app.route('/', methods=['GET','POST'])
 def index():
     search_query=request.args.get('search','').strip()
@@ -21,15 +24,25 @@ def index():
         if item:
             if len(item)>10:
                 abort(400)
-            if item not in cart:
-                cart.append(item)
+            if not any(p['name'].lower()==item.lower() for p in cart):
+                image_path='images/placeholder.png'
+                uploaded=upload_images.get(item)
+                if uploaded:
+                    if isinstance (uploaded,list):
+                        image_path=f"images/{uploaded[0]}"
+                    else:
+                        image_path=f"images/{uploaded}"
+                cart.append({
+                  "name":item,
+                  "image":image_path  
+                })
                 return redirect(url_for("cart.show_cart"))
             else:
                 return render_template('index.html',message="The item already in cart",search_query=search_query,search_results=search_results)
     if search_query :
         for item in cart:
-            if search_query.lower() in item.lower():
-                search_results.append(item)
+            if search_query.lower() in item['name'].lower():
+                search_results.append(item['name'])
         if not search_results:
                 abort(404, description=f"The item '{search_query}' was not found")
 
@@ -42,15 +55,40 @@ def upload_file():
         if not product_id or not file or file.filename=="":
             flash("Both product id and file name should be enter")
             return redirect(request.url)
-        filename=secure_filename(f"{product_id}_{file.filename}")
-        path=os.path.join('static/images',filename)
-        file.save(path)
+        ext=file.filename.rsplit('.')[1].lower()
+        unique_name = f"{secure_filename(product_id)}_{uuid.uuid4().hex}.{ext}"
+        save_path = os.path.join(app.config['UPLOAD_FOLDER'], unique_name)
+
+        file.save(save_path)
+        upload_images[product_id]=unique_name
         flash("Image upload successfully")
         return  redirect(url_for('upload_file')) 
     return render_template('upload.html')
+@app.route('/admin/multiple-upload',methods=['GET','POST'])
+def upload_multiple_files():
+   if request.method=='POST':
+       product_id=request.form.get('product_id')
+       files=request.files.getlist('images')
+       upload_filenames=[]
+       for file in files:
+           ext=file.filename.rsplit('.',1)[1].lower()
+           unique_name=f"{secure_filename(product_id)}_{uuid.uuid4().hex}.{ext}"
+           save_path=os.path.join(app.config['UPLOAD_FOLDER'],unique_name)
+           file.save(save_path)
+           upload_filenames.append(unique_name)
+       upload_images[product_id]=upload_filenames
+       flash("Multiple images uploaded successfully ")
+       return redirect(url_for('upload_multiple_files'))
+   return render_template('upload_multiple.html')
     
+        
 
-
+@app.route('/admin/images')
+def show_upload_images():
+    return upload_images
+@app.route('/images/<string:image_name>/')
+def serve_image(image_name):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], image_name)
 
 def open_browser():
     webbrowser.open_new("http://127.0.0.1:5000")

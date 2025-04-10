@@ -3,47 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Add Item to Cart</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Add An Item to cart</h1>
+    <div class='container'>
+    <h1>Add An Item to Cart</h1>
+
     {% if message %}
-        <p style="color: red;">{{ message }}</p>
+        <p class="error">{{ message }}</p>
     {% endif %}
 
+    <div class="form-row">
+        <!-- Add Item Form -->
+        <form action="{{url_for('cart.index')}}" method="POST" class="add-form" enctype='multipart/form-data'>
+            <label for="item">Enter The Name of Item</label>
+            <input type="text" id="item" name="item" required>
+            <label for='image'> Upload Product Image </label> 
+            <input type='file' id="image" name='image' accept="image/*">
+            <button type="submit">Add Item to Cart</button>
+        </form>
 
+        <!-- Search Form -->
+        <form action="{{url_for('cart.index')}}" method="GET" class="search-form">
+            <label for="search">Search</label>
+            <input type="text" name="search" id="search" value="{{search_query}}">
+            <button type="submit">Search</button>
+        </form>
+    </div>
 
-    <form action="{{url_for('cart.index')}}" method="POST">
-     <label for="item">Enter The Name of Item </label>
-     <input type="text" id="item" name="item" required>
-     <button type="submit"> Add Item to cart</button>
-     <label for
-    </form>
-    <br>
-    <a href="{{url_for ('cart.show_cart')}}">Show List Of Items In Cart</a>
+    <a href="{{url_for('cart.show_cart')}}">Show List of Items in Cart</a>
 
+    {% if search_query %}
+        <h3>Search result for "{{search_query}}":</h3>
 
-    <h2>SEARCH</h2>
-    <form action="{{url_for('cart.index')}}" method="GET">
-    <input type="text" name="search" value="{{search_query}}">
-    <button type="submit"> SEARCH</button>
-    </form>
-    {%if search_query%}
-
-    <h3>Search result "{{search_query}}":</h3>
-
-    {% if search_results %}
-    <ul>
-        {% for item in search_results %}
-            <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No matching items found.</p>
+        {% if search_results %}
+            <ul>
+                {% for item in search_results %}
+                    <li>{{ item }}</li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>No matching items found.</p>
+        {% endif %}
     {% endif %}
-{% endif %}
-
-<br>
-
+        </div>
 </body>
 </html>

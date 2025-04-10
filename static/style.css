@@ -1,36 +1,30 @@
-body {
-    font-family: Arial, sans-serif;
-    padding: 30px;
-    background-color: #f8f9fa;
-}
-
-h2 {
-    color: #333;
-}
-
-form {
-    background-color: white;
-    padding: 20px;
+.container {
+    width: 350px;
+    margin: 50px auto;
+    padding: 25px;
+    background: white;
     border-radius: 10px;
-    width: 300px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.form-group {
+    margin-bottom: 15px;
 }
 
 label {
     display: block;
-    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
 }
 
 input[type="text"],
 input[type="file"] {
     width: 100%;
-    padding: 6px;
-    margin-top: 5px;
+    padding: 8px;
     box-sizing: border-box;
 }
 
 button {
-    margin-top: 15px;
     padding: 10px;
     width: 100%;
     background-color: #007bff;
@@ -42,4 +36,10 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+.flashes {
+    color: green;
+    list-style-type: disc;
+    margin-bottom: 20px;
 }

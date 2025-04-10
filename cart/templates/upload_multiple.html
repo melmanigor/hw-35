@@ -9,7 +9,7 @@
 <body>
 
     <div class="container">
-        <h2>Upload image</h2>
+        <h2>Upload Multiple images</h2>
 
         {% with messages = get_flashed_messages() %}
         {% if messages %}
@@ -28,12 +28,12 @@
             </div>
 
             <div class="form-group">
-                <label for="image">Upload Image</label>
-                <input type="file" id="image" name="image" accept="image/*" required>
+                <label for="images">Upload Image</label>
+                <input type="file" id="images" name="images" multiple accept="image/*" required>
             </div>
 
             <div class="form-group">
-                <button type="submit">UPLOAD IMAGE</button>
+                <button type="submit">UPLOAD IMAGES</button>
             </div>
         </form>
     </div>
