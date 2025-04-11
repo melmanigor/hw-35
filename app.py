@@ -1,9 +1,10 @@
-from flask import Flask,render_template,request,redirect,url_for,abort,flash,send_from_directory
+from flask import Flask,render_template,request,redirect,url_for,abort,flash,send_from_directory,session
 from cart import cart_bp,cart,api_cart_bp
 import webbrowser
 import os
 import uuid
 from werkzeug.utils import secure_filename
+from werkzeug.security import generate_password_hash,check_password_hash
 from threading import Timer
 
 app=Flask(__name__)
@@ -15,8 +16,14 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg'}
 
 upload_images={}
+users = {
+    'admin': generate_password_hash("1234"),
+    'testuser': generate_password_hash("password")
+}
 @app.route('/', methods=['GET','POST'])
 def index():
+    user=session.get('user_id')
+
     search_query=request.args.get('search','').strip()
     search_results=[]
     if request.method=="POST":
@@ -46,7 +53,7 @@ def index():
         if not search_results:
                 abort(404, description=f"The item '{search_query}' was not found")
 
-    return render_template('index.html',search_query=search_query,search_results=search_results)
+    return render_template('index.html',search_query=search_query,search_results=search_results,user=user)
 @app.route('/admin/upload',methods=['GET','POST'])
 def upload_file():
     if request.method =='POST':
@@ -80,9 +87,38 @@ def upload_multiple_files():
        flash("Multiple images uploaded successfully ")
        return redirect(url_for('upload_multiple_files'))
    return render_template('upload_multiple.html')
-    
-        
+@app.route ('/signup',methods=['GET','POST'])
+def signup():
+    if request.method=='POST':
+        username=request.form.get('username')
+        password=request.form.get('password')
+        if not username or not password:
+            flash("User name or password required")
+            return redirect(url_for('signup'))
+        if username  in users:
+            flash("User name already exist")
+            return redirect(url_for('signup'))
+        password_hash=generate_password_hash(password)
+        users[username]=password_hash
+        return redirect(url_for('index'))
+    return render_template('signup.html')
 
+@app.route('/login',methods=['GET','POST'] )   
+def login():
+    if request.method=='POST':
+        username=request.form.get('username')
+        password=request.form.get('password')
+        if username not in users:
+            flash("User not exist")
+            return redirect(url_for('login'))
+        if  not check_password_hash(users[username],password):
+            flash("Incorrect password or User name")
+            return redirect(url_for('login'))
+        session['user_id']=username
+        flash(f"Welcome {username}!")
+        return redirect(url_for('index'))
+    return render_template('login.html')
+     
 @app.route('/admin/images')
 def show_upload_images():
     return upload_images
