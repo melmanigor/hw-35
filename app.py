@@ -17,8 +17,8 @@ app.config['ALLOWED_EXTENSIONS'] = {'png', 'jpg'}
 
 upload_images={}
 users = {
-    'admin': generate_password_hash("1234"),
-    'testuser': generate_password_hash("password")
+    'igor':{'password': generate_password_hash("1234"),'role':'admin'},
+    'testuser':{'password':generate_password_hash("password"), 'role':'user'}
 }
 @app.route('/', methods=['GET','POST'])
 def index():
@@ -99,8 +99,8 @@ def signup():
             flash("User name already exist")
             return redirect(url_for('signup'))
         password_hash=generate_password_hash(password)
-        users[username]=password_hash
-        return redirect(url_for('index'))
+        users[username]={'password':password_hash,'role':'user'}
+        return redirect(url_for('login'))
     return render_template('signup.html')
 
 @app.route('/login',methods=['GET','POST'] )   
@@ -108,16 +108,35 @@ def login():
     if request.method=='POST':
         username=request.form.get('username')
         password=request.form.get('password')
+        user=users.get(username)
         if username not in users:
             flash("User not exist")
             return redirect(url_for('login'))
-        if  not check_password_hash(users[username],password):
+        if  not check_password_hash(user['password'],password):
             flash("Incorrect password or User name")
             return redirect(url_for('login'))
         session['user_id']=username
+        session['role']=user['role']
         flash(f"Welcome {username}!")
-        return redirect(url_for('index'))
+        if user['role']=='admin':
+            return redirect(url_for('admin_dashboard'))
+        else:
+             return redirect(url_for('index'))
     return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    username=session.get('user_id')
+    session.clear()
+    flash(f"{username} logout successfully")
+    return redirect(url_for('index'))
+
+@app.route('/admin/dashboard')
+def admin_dashboard():
+    if session.get('role')!='admin':
+        flash("You are not admin role")
+        return render_template('unauthorized.html'),403
+    return render_template('admin_dashboard.html')
      
 @app.route('/admin/images')
 def show_upload_images():
