@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, abort
+from flask import Blueprint, render_template, request, redirect, url_for, abort,session
 
 cart_bp = Blueprint('cart', __name__, template_folder='templates')
-cart = []  
+cart = session.get('cart',[])
 @cart_bp.route('/', methods=['GET', 'POST'])
 def index():
     search_query = request.args.get('search', '').strip()
