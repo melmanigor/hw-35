@@ -1,5 +1,5 @@
 from flask import Flask,render_template,request,redirect,url_for,abort,flash,send_from_directory,session
-from cart import cart_bp,cart,api_cart_bp
+from cart import cart_bp,api_cart_bp
 import webbrowser
 import os
 import uuid
@@ -23,6 +23,7 @@ users = {
 @app.route('/', methods=['GET','POST'])
 def index():
     user=session.get('user_id')
+    cart=session.get('cart',[])
 
     search_query=request.args.get('search','').strip()
     search_results=[]

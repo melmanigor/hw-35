@@ -14,6 +14,9 @@
         <li id="item-{{ item.name | urlencode }}">
             <img src="{{ url_for('static', filename=item.image) }}" alt="{{ item.name }}" width="100">
             {{ item.name }}
+            Quantity:{{item.quantity}}
+            <button onclick="updateQuantity('{{ item.name }}', 1)">+</button>
+            <button onclick="updateQuantity('{{ item.name }}', -1)">-</button>
             <button onclick="removeItem('{{ item.name }}')">Remove</button>
         </li>
     {% endfor %}

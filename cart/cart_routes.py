@@ -1,14 +1,16 @@
 from flask import Blueprint, render_template, request, redirect, url_for, abort,session
 
 cart_bp = Blueprint('cart', __name__, template_folder='templates')
-cart = session.get('cart',[])
 @cart_bp.route('/', methods=['GET', 'POST'])
 def index():
+    cart = session.get('cart',[])
+
     search_query = request.args.get('search', '').strip()
     search_results = []
 
     if request.method == "POST":
         item = request.form.get('item')
+        quantity=request.form.get('quantity',1,type=int)
         if item:
             if len(item) > 10:
                 abort(400)
@@ -18,8 +20,11 @@ def index():
                 image_path = 'images/placeholder.png' 
                 cart.append({
                     "name": item,
+                    "quantity":quantity,
                     "image": image_path
                 })
+                session['cart']=cart
+                session.modified=True
                 return redirect(url_for("cart.show_cart"))
             else:
                 return render_template(
@@ -41,15 +46,43 @@ def index():
 
 @cart_bp.route('/view_cart')
 def show_cart():
+    cart=session.get('cart',[])
     return render_template("cart.html", cart=cart)
 
-@cart_bp.route('/remove_item/<path:item>', methods=["DELETE"])
+@cart_bp.route('/remove_item/<path:item>', methods=["POST"])
 def remove_item(item):
+    cart=session.get('cart',[])
+    updated_cart = []
+    found=False
+
     for i in cart:
-        if i['name'] == item:
-            cart.remove(i)
-            return "removed", 200
-    return "not found", 404
+        if i['name'] != item:
+            updated_cart.append(i)
+        else:
+            found=True
+    if found:
+        session['cart']=updated_cart
+        session.modified=True
+        return "removed",200
+    else:
+        return "not found", 404
+@cart_bp.route('/update_quantity', methods=['POST'])
+def update_quantity():
+    item_name = request.form.get('item')
+    delta = int(request.form.get('delta', 0))
+
+    cart = session.get('cart', [])
+    for product in cart:
+        if product['name'].lower() == item_name.lower():
+            product['quantity'] += delta
+            if product['quantity'] <= 0:
+                cart.remove(product)
+            session['cart'] = cart
+            session.modified = True
+            return redirect(url_for('cart.show_cart'))
+
+    return redirect(url_for('cart.show_cart'))
+
 
 
 @cart_bp.app_errorhandler(404)
